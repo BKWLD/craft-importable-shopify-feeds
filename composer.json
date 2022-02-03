@@ -1,0 +1,31 @@
+{
+  "name": "bkwld/craft-importable-shopify-feeds",
+  "description": "A Craft plugin that maps Shopify data into feeds that are more easily consumed by FeedMe.",
+  "type": "craft-plugin",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Bukwild",
+      "homepage": "https://www.bukwild.com"
+    }
+  ],
+  "support": {
+    "email": "info@bukwild.com",
+    "issues": "https://github.com/bkwld/craft-importable-shopify-feeds/issues?state=open",
+    "source": "https://github.com/bkwld/craft-importable-shopify-feeds",
+    "docs": "https://github.com/bkwld/craft-importable-shopify-feeds/blob/master/README.md"
+  },
+  "require": {
+    "guzzlehttp/guzzle": "^7.4",
+    "craftcms/cms": "^3.0.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Bkwld\\ImportableShopifyFeeds\\": "src/"
+    }
+  },
+  "extra": {
+    "name": "Importable Shopify Feeds",
+    "handle": "importable-shopify-feeds"
+  }
+}
