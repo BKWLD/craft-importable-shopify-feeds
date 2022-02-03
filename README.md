@@ -24,8 +24,8 @@ Set up FeedMe to query either of the following routes.  We're only exposing a mi
 ```json
 [
   {
-		"title": "Product Title",
-		"handle": "product-title"
+    "title": "Product Title",
+    "handle": "product-title"
   },
 ]
 ```
