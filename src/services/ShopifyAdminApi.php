@@ -81,13 +81,21 @@ class ShopifyAdminApi extends Component
             }'
         ]);
 
+        // Get array of variants
+        $variants = $this->flattenEdges($response)['productVariants'];
+
+        // Remove variants that are missing a sku
+        $variants = array_filter($variants, function($variant) {
+            return !empty($variant['sku']);
+        });
+
         // Make a title that is more useful for displaying in the CMS.
         return array_map(function($variant) {
             $variant['dashboardTitle'] = $variant['product']['title']
                 .' - '.$variant['title']
                 .(($sku = $variant['sku']) ? ' ('.$sku.')' : null);
             return $variant;
-        }, $this->flattenEdges($response)['productVariants']);
+        }, $variants);
     }
 
     /**
