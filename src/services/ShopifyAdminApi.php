@@ -21,7 +21,9 @@ class ShopifyAdminApi extends Component
         $this->client = new Client([
             'base_uri' => getenv('SHOPIFY_URL').'/admin/api/2022-01/',
             'headers' => [
-                'X-Shopify-Access-Token' => getenv('SHOPIFY_API_PASSWORD'),
+                'X-Shopify-Access-Token' =>
+                    getenv('SHOPIFY_ADMIN_API_ACCESS_TOKEN') ?:
+                    getenv('SHOPIFY_API_PASSWORD'),
             ],
         ]);
     }

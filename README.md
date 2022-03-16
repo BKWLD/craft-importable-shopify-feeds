@@ -7,11 +7,16 @@ A Craft plugin that maps Shopify data into feeds that are more easily consumed b
 This expects that your Craft .env file has:
 
 ```env
-SHOPIFY_URL=
-SHOPIFY_API_PASSWORD=
+SHOPIFY_URL=https://your-store.myshopify.com
+SHOPIFY_ADMIN_API_ACCESS_TOKEN=xxxxxxxxxxx
 ```
 
-The `SHOPIFY_URL` should be your `myshopify.com` URL, not your custom domain.
+In addition, you'll need to give your Custom App the following permissions:
+
+- Product listings
+  - read_product_listings
+- Products
+  - read_products
 
 ## Usage
 
