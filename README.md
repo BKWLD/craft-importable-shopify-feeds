@@ -14,9 +14,9 @@ SHOPIFY_ADMIN_API_ACCESS_TOKEN=xxxxxxxxxxx
 In addition, you'll need to give your Custom App the following permissions:
 
 - Product listings
-  - read_product_listings
+  - `read_product_listings`
 - Products
-  - read_products
+  - `read_products`
 
 ## Usage
 
