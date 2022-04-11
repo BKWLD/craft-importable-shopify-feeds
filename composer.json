@@ -2,6 +2,7 @@
   "name": "bkwld/craft-importable-shopify-feeds",
   "description": "A Craft plugin that maps Shopify data into feeds that are more easily consumed by FeedMe.",
   "type": "craft-plugin",
+	"version": "1.0.1",
   "license": "MIT",
   "authors": [
     {

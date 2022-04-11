@@ -29,5 +29,14 @@ class FeedsController extends Controller
         return $this->asJson($variants);
     }
 
+    /**
+     * Get all collections
+     */
+    public function actionCollections(): Response
+    {
+        $collections = Plugin::getInstance()->shopifyAdminApi->getCollections();
+        return $this->asJson($collections);
+    }
+
 
 }
