@@ -101,7 +101,7 @@ class ShopifyAdminApi extends Component
     }
 
     /**
-     * Get all products
+     * Get all collections
      */
     public function getCollections()
     {
