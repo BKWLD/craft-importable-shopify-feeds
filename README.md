@@ -52,3 +52,16 @@ Set up FeedMe to query either of the following routes.  We're only exposing a mi
   },
 ]
 ```
+
+#### Collections
+
+`https://cms-domain.com/actions/importable-shopify-feeds/feeds/collections`
+
+```json
+[
+	{
+		"title": "Collection Title",
+		"handle": "collection-title"
+	},
+]
+```

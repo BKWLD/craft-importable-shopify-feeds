@@ -101,6 +101,26 @@ class ShopifyAdminApi extends Component
     }
 
     /**
+     * Get all collections
+     */
+    public function getCollections()
+    {
+        $response = $this->execute([
+            'query' => '{
+                collections(first:250) {
+                    edges {
+                        node {
+                            title
+                            handle
+                        }
+                    }
+                }
+            }'
+        ]);
+        return $this->flattenEdges($response)['collections'];
+    }
+
+    /**
      * Flatten edges arrays
      */
     private function flattenEdges($obj) {
