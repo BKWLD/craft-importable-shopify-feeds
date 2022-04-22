@@ -2,6 +2,7 @@
 
 namespace Bkwld\ImportableShopifyFeeds\services;
 
+use Craft;
 use yii\base\Component;
 use Exception;
 use GuzzleHttp\Client;
@@ -18,14 +19,31 @@ class ShopifyAdminApi extends Component
      */
     public function __construct()
     {
+        list($url, $token) = $this->getCreds();
         $this->client = new Client([
-            'base_uri' => getenv('SHOPIFY_URL').'/admin/api/2022-01/',
+            'base_uri' => $url.'/admin/api/2022-01/',
             'headers' => [
-                'X-Shopify-Access-Token' =>
-                    getenv('SHOPIFY_ADMIN_API_ACCESS_TOKEN') ?:
-                    getenv('SHOPIFY_API_PASSWORD'),
+                'X-Shopify-Access-Token' => $token,
             ],
         ]);
+    }
+
+    /**
+     * Get the Shopify creds to use, supporting switching creds based on store
+     * query param
+     */
+    private function getCreds()
+    {
+        $store = Craft::$app->request->getQueryParam('store');
+        $suffix = $store ? '_'.$store : '';
+        if (!$url = getenv('SHOPIFY_URL'.$suffix)) {
+            throw new Exception('Missing SHOPIFY_URL');
+        }
+        if (!$token = (getenv('SHOPIFY_ADMIN_API_ACCESS_TOKEN'.$suffix) ?:
+            getenv('SHOPIFY_API_PASSWORD'.$suffix))) {
+            throw new Exception('Missing SHOPIFY_ADMIN_API_ACCESS_TOKEN');
+        }
+        return [$url, $token];
     }
 
     /**
