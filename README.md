@@ -65,3 +65,18 @@ Set up FeedMe to query either of the following routes.  We're only exposing a mi
 	},
 ]
 ```
+
+#### Multiple Shopify stores
+
+If you have multiple Shopify stores but one Craft instance (like if you are using Craft's multi-site feature to manage multiple Shopify stores), you can should can specify the Shopify ENV credentials using an arbitrary namespace suffix.  Like:
+
+```env
+SHOPIFY_URL=https://your-store.myshopify.com
+SHOPIFY_ADMIN_API_ACCESS_TOKEN=xxxxxxxxxxx
+SHOPIFY_URL_CANADA=https://your-canadian-store.myshopify.com
+SHOPIFY_ADMIN_API_ACCESS_TOKEN_CANADA=xxxxxxxxxxx
+```
+
+Then, you can use that namesapce in all of the feed URLs like so:
+
+`https://cms-domain.com/actions/importable-shopify-feeds/feeds/products?store=CANADA`
