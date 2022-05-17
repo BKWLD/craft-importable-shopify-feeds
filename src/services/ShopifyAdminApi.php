@@ -21,7 +21,7 @@ class ShopifyAdminApi extends Component
     {
         list($url, $token) = $this->getCreds();
         $this->client = new Client([
-            'base_uri' => $url.'/admin/api/2022-01/',
+            'base_uri' => $url.'/admin/api/2022-04/',
             'headers' => [
                 'X-Shopify-Access-Token' => $token,
             ],
@@ -60,23 +60,57 @@ class ShopifyAdminApi extends Component
     }
 
     /**
+     * Execute a GQL query and paginate through the results
+     */
+    public function paginate($payload)
+    {
+        $results = [];
+        do {
+
+            // Fetch this page and add to the results
+            $response = $this->execute($payload);
+            $results = array_merge(
+                $results,
+                $this->flattenEdges($response)['results'],
+            );
+
+            // If there is another page, add the end cursor to the next
+            // request
+            $pageInfo = $response['results']['pageInfo'] ?? [];
+            $hasNextPage = $pageInfo['hasNextPage'] ?? false;
+            if ($hasNextPage) {
+                $payload['variables'] = array_merge(
+                    $payload['variables'] ?? [],
+                    ['cursor' => $pageInfo['endCursor']],
+                );
+            }
+        } while ($hasNextPage);
+
+        // Return the final list of results, fixing string keys
+        return $results;
+    }
+
+    /**
      * Get all products
      */
     public function getProducts()
     {
-        $response = $this->execute([
-            'query' => '{
-                products(first:250) {
+        return $this->paginate([
+            'query' => 'query getProducts($cursor: String) {
+                results: products(first:250, after:$cursor) {
                     edges {
                         node {
                             title
                             handle
                         }
                     }
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
                 }
             }'
         ]);
-        return $this->flattenEdges($response)['products'];
     }
 
     /**
@@ -84,9 +118,9 @@ class ShopifyAdminApi extends Component
      */
     public function getVariants()
     {
-        $response = $this->execute([
-            'query' => '{
-                productVariants(first:250) {
+        $variants = $this->paginate([
+            'query' => 'query getVariants($cursor: String) {
+                results: productVariants(first:250, after:$cursor) {
                     edges {
                         node {
                             title
@@ -97,12 +131,13 @@ class ShopifyAdminApi extends Component
                             }
                         }
                     }
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
                 }
             }'
         ]);
-
-        // Get array of variants
-        $variants = $this->flattenEdges($response)['productVariants'];
 
         // Remove variants that are missing a sku
         $variants = array_filter($variants, function($variant) {
@@ -110,12 +145,15 @@ class ShopifyAdminApi extends Component
         });
 
         // Make a title that is more useful for displaying in the CMS.
-        return array_map(function($variant) {
+        $variants = array_map(function($variant) {
             $variant['dashboardTitle'] = $variant['product']['title']
                 .' - '.$variant['title']
                 .(($sku = $variant['sku']) ? ' ('.$sku.')' : null);
             return $variant;
         }, $variants);
+
+        // Convert string keys to integer
+        return array_values($variants);
     }
 
     /**
@@ -123,19 +161,22 @@ class ShopifyAdminApi extends Component
      */
     public function getCollections()
     {
-        $response = $this->execute([
-            'query' => '{
-                collections(first:250) {
+        return $this->paginate([
+            'query' => 'collections($cursor: String) {
+                results: collections(first:250, after:$cursor) {
                     edges {
                         node {
                             title
                             handle
                         }
                     }
+                    pageInfo {
+                        hasNextPage
+                        endCursor
+                    }
                 }
             }'
         ]);
-        return $this->flattenEdges($response)['collections'];
     }
 
     /**
