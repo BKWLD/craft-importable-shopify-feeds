@@ -215,7 +215,7 @@ class ShopifyAdminApi extends Component
     private function flattenEdges($obj) {
 
         // If a simple value, return
-        if (is_scalar($obj)) return $obj;
+        if (!$obj || is_scalar($obj)) return $obj;
 
         // Loop through object properties
         return array_map(function($val) {
