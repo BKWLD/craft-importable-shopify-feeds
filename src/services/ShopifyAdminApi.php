@@ -6,6 +6,7 @@ use Craft;
 use yii\base\Component;
 use Exception;
 use GuzzleHttp\Client;
+use Illuminate\Support\Collection;
 
 /**
  * Make Guzzle client for querying Shopify Admin API
@@ -49,7 +50,7 @@ class ShopifyAdminApi extends Component
     /**
      * Execute a GQL query
      */
-    public function execute($payload)
+    public function execute($payload): array
     {
         $response = $this->client->post('graphql.json', [
             'json' => $payload,
@@ -62,16 +63,15 @@ class ShopifyAdminApi extends Component
     /**
      * Execute a GQL query and paginate through the results
      */
-    public function paginate($payload)
+    public function paginate($payload): Collection
     {
-        $results = [];
+        $results = new Collection;
         do {
 
             // Fetch this page and add to the results
             $response = $this->execute($payload);
-            $results = array_merge(
-                $results,
-                $this->flattenEdges($response)['results'],
+            $results = $results->concat(
+                $this->flattenEdges($response)['results']
             );
 
             // If there is another page, add the end cursor to the next
@@ -93,7 +93,7 @@ class ShopifyAdminApi extends Component
     /**
      * Get all products
      */
-    public function getProducts()
+    public function getProducts(): Collection
     {
         return $this->paginate([
             'query' => 'query getProducts($cursor: String) {
@@ -116,9 +116,9 @@ class ShopifyAdminApi extends Component
     /**
      * Get all variants of all products
      */
-    public function getVariants()
+    public function getVariants(): Collection
     {
-        $variants = $this->paginate([
+        return $this->paginate([
             'query' => 'query getVariants($cursor: String) {
                 results: productVariants(first:250, after:$cursor) {
                     edges {
@@ -128,6 +128,7 @@ class ShopifyAdminApi extends Component
                             product {
                                 title
                                 handle
+                                status
                             }
                         }
                     }
@@ -137,29 +138,58 @@ class ShopifyAdminApi extends Component
                     }
                 }
             }'
-        ]);
+        ])
 
         // Remove variants that are missing a sku
-        $variants = array_filter($variants, function($variant) {
+        ->filter(function($variant) {
             return !empty($variant['sku']);
-        });
+        })
+
+        // Dedupe by SKU, prefering active variants. Shopify allows you to
+        // re-use SKUs between multiple product variants but this is used in
+        // Feed Me as the unique identifier for importing.
+        ->reduce(function($variants, $variant) {
+
+            // Check if this variant has already been added
+            $existingIndex = $variants->search(
+                function($existing) use ($variant) {
+                    return $existing['sku'] == $variant['sku'];
+                }
+            );
+
+            // If this sku is already in the list, replace it if the previous
+            // instance was not an active product
+            // https://shopify.dev/api/admin-graphql/2022-04/enums/ProductStatus
+            if ($existingIndex !== false) {
+                $existing = $variants->get($existingIndex);
+                if ($existing['product']['status'] != 'ACTIVE') {
+                    $variants = $variants->replace([
+                        $existingIndex => $variant
+                    ]);
+                }
+
+            // ... else the variant didn't exist, so add it
+            } else $variants->push($variant);
+
+            // Keep working...
+            return $variants;
+        }, new Collection)
 
         // Make a title that is more useful for displaying in the CMS.
-        $variants = array_map(function($variant) {
+        ->map(function($variant) {
             $variant['dashboardTitle'] = $variant['product']['title']
                 .' - '.$variant['title']
                 .(($sku = $variant['sku']) ? ' ('.$sku.')' : null);
             return $variant;
-        }, $variants);
 
-        // Convert string keys to integer
-        return array_values($variants);
+        // Use integer keys
+        })->values();
     }
 
     /**
      * Get all collections
      */
-    public function getCollections()
+    public function getCollections(): Collection
     {
         return $this->paginate([
             'query' => 'collections($cursor: String) {
