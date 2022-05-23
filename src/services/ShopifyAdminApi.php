@@ -102,6 +102,7 @@ class ShopifyAdminApi extends Component
                         node {
                             title
                             handle
+                            publishedOnCurrentPublication
                         }
                     }
                     pageInfo {
@@ -110,7 +111,22 @@ class ShopifyAdminApi extends Component
                     }
                 }
             }'
-        ]);
+        ])
+
+        // Remove products that weren't published to the Sales Channel of the
+        // Custom App whose credentials are being used to query the API.
+        ->filter(function($variant) {
+            return $variant['publishedOnCurrentPublication'];
+        })
+
+        // Remove fields that we're used to pre-filter
+        ->map(function($variant) {
+            unset($variant['publishedOnCurrentPublication']);
+            return $variant;
+        })
+
+        // Use integer keys
+        ->values();
     }
 
     /**
@@ -129,6 +145,7 @@ class ShopifyAdminApi extends Component
                                 title
                                 handle
                                 status
+                                publishedOnCurrentPublication
                             }
                         }
                     }
@@ -143,6 +160,14 @@ class ShopifyAdminApi extends Component
         // Remove variants that are missing a sku
         ->filter(function($variant) {
             return !empty($variant['sku']);
+        })
+
+        // Remove variants that weren't published to the Sales Channel of the
+        // Custom App whose credentials are being used to query the API. This
+        // can be used to filter out products not intended for the public store,
+        // like wholesale only products.
+        ->filter(function($variant) {
+            return $variant['product']['publishedOnCurrentPublication'];
         })
 
         // Dedupe by SKU, prefering active variants. Shopify allows you to
@@ -181,9 +206,19 @@ class ShopifyAdminApi extends Component
                 .' - '.$variant['title']
                 .(($sku = $variant['sku']) ? ' ('.$sku.')' : null);
             return $variant;
+        })
+
+        // Remove fields that we're used to pre-filter
+        ->map(function($variant) {
+            unset(
+                $variant['product']['status'],
+                $variant['product']['publishedOnCurrentPublication']
+            );
+            return $variant;
+        })
 
         // Use integer keys
-        })->values();
+        ->values();
     }
 
     /**
