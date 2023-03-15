@@ -28,5 +28,10 @@
   "extra": {
     "name": "Importable Shopify Feeds",
     "handle": "importable-shopify-feeds"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require-dev": {
+    "craftcms/rector": "dev-main"
   }
 }
