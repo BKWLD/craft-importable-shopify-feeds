@@ -17,7 +17,7 @@
   },
   "require": {
     "guzzlehttp/guzzle": "^7.4",
-    "craftcms/cms": "^3.0.0",
+    "craftcms/cms": "^3.0 || ^4.0",
     "illuminate/collections": "^8 || ^9"
   },
   "autoload": {
@@ -28,5 +28,10 @@
   "extra": {
     "name": "Importable Shopify Feeds",
     "handle": "importable-shopify-feeds"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require-dev": {
+    "craftcms/rector": "dev-main"
   }
 }

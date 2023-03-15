@@ -9,7 +9,7 @@ use yii\web\Response;
 class FeedsController extends Controller
 {
     // Allow public requests from FeedMe
-    protected $allowAnonymous = true;
+    protected array|int|bool $allowAnonymous = true;
 
     /**
      * Get all products
