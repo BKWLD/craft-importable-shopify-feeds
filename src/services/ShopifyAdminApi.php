@@ -227,7 +227,7 @@ class ShopifyAdminApi extends Component
     public function getCollections(): Collection
     {
         return $this->paginate([
-            'query' => 'collections($cursor: String) {
+            'query' => 'query collections($cursor: String) {
                 results: collections(first:250, after:$cursor) {
                     edges {
                         node {
