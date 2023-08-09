@@ -2,6 +2,7 @@
 
 namespace Bkwld\ImportableShopifyFeeds\services;
 
+use Bkwld\ImportableShopifyFeeds\Plugin;
 use Craft;
 use yii\base\Component;
 use Exception;
@@ -14,6 +15,7 @@ use Illuminate\Support\Collection;
 class ShopifyAdminApi extends Component
 {
     private $client;
+    private $disablePublishedCheck;
 
     /**
      * Make Guzzle instance
@@ -27,6 +29,8 @@ class ShopifyAdminApi extends Component
                 'X-Shopify-Access-Token' => $token,
             ],
         ]);
+        $this->disablePublishedCheck = Plugin::getInstance()
+            ->settings->disablePublishedCheck;
     }
 
     /**
@@ -166,8 +170,10 @@ class ShopifyAdminApi extends Component
         // Custom App whose credentials are being used to query the API. This
         // can be used to filter out products not intended for the public store,
         // like wholesale only products.
-        ->filter(function($variant) {
-            return $variant['product']['publishedOnCurrentPublication'];
+        ->when(!$this->disablePublishedCheck, function($variants) {
+            return $variants->filter(function($variant) {
+                return $variant['product']['publishedOnCurrentPublication'];
+            });
         })
 
         // Dedupe by SKU, prefering active variants. Shopify allows you to
