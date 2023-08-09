@@ -22,7 +22,7 @@ class ShopifyAdminApi extends Component
     {
         list($url, $token) = $this->getCreds();
         $this->client = new Client([
-            'base_uri' => $url.'/admin/api/2022-04/',
+            'base_uri' => $url.'/admin/api/2023-07/',
             'headers' => [
                 'X-Shopify-Access-Token' => $token,
             ],
