@@ -99,14 +99,17 @@ class ShopifyAdminApi extends Component
      */
     public function getProducts(): Collection
     {
+        // Conditionally add `publishedOnCurrentPublication`
+        $publishedQuery = $this->disablePublishedCheck ? "" : "publishedOnCurrentPublication";
+
         return $this->paginate([
-            'query' => 'query getProducts($cursor: String) {
-                results: products(first:250, after:$cursor) {
+            'query' => "query getProducts(\$cursor: String) {
+                results: products(first:250, after:\$cursor) {
                     edges {
                         node {
                             title
                             handle
-                            publishedOnCurrentPublication
+                            $publishedQuery
                         }
                     }
                     pageInfo {
@@ -114,17 +117,18 @@ class ShopifyAdminApi extends Component
                         endCursor
                     }
                 }
-            }'
+            }"
         ])
 
         // Remove products that weren't published to the Sales Channel of the
         // Custom App whose credentials are being used to query the API.
-        ->filter(function($variant) {
-            return $variant['publishedOnCurrentPublication'];
+        ->when(!$this->disablePublishedCheck, function($variants) {
+            return $variants->filter(function($variant) {
+                return $variant['product']['publishedOnCurrentPublication'];
+            });
         })
 
-        // Remove fields that we're used to pre-filter
-        ->map(function($variant) {
+        ->when(!$this->disablePublishedCheck, function($variant) {
             unset($variant['publishedOnCurrentPublication']);
             return $variant;
         })
@@ -138,9 +142,12 @@ class ShopifyAdminApi extends Component
      */
     public function getVariants(): Collection
     {
+        // Conditionally add `publishedOnCurrentPublication`
+        $publishedQuery = $this->disablePublishedCheck ? "" : "publishedOnCurrentPublication";
+
         return $this->paginate([
-            'query' => 'query getVariants($cursor: String) {
-                results: productVariants(first:250, after:$cursor) {
+            'query' => "query getVariants(\$cursor: String) {
+                results: productVariants(first:250, after:\$cursor) {
                     edges {
                         node {
                             title
@@ -149,7 +156,7 @@ class ShopifyAdminApi extends Component
                                 title
                                 handle
                                 status
-                                publishedOnCurrentPublication
+                                $publishedQuery
                             }
                         }
                     }
@@ -158,7 +165,7 @@ class ShopifyAdminApi extends Component
                         endCursor
                     }
                 }
-            }'
+            }"
         ])
 
         // Remove variants that are missing a sku
