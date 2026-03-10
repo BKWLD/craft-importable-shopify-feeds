@@ -122,15 +122,18 @@ class ShopifyAdminApi extends Component
 
         // Remove products that weren't published to the Sales Channel of the
         // Custom App whose credentials are being used to query the API.
-        ->when(!$this->disablePublishedCheck, function($variants) {
-            return $variants->filter(function($variant) {
-                return $variant['product']['publishedOnCurrentPublication'];
+        ->when(!$this->disablePublishedCheck, function($products) {
+            return $products->filter(function($product) {
+                return $product['publishedOnCurrentPublication'];
             });
         })
 
-        ->when(!$this->disablePublishedCheck, function($variant) {
-            unset($variant['publishedOnCurrentPublication']);
-            return $variant;
+        // Remove fields that were used to pre-filter
+        ->when(!$this->disablePublishedCheck, function($products) {
+            return $products->map(function($product) {
+                unset($product['publishedOnCurrentPublication']);
+                return $product;
+            });
         })
 
         // Use integer keys
